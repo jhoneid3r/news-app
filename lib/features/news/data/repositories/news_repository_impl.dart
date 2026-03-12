@@ -4,6 +4,7 @@ import '../../../../core/error/failures.dart';
 import '../../domain/entities/article.dart';
 import '../../domain/repositories/news_repository.dart';
 import '../datasources/news_mock_datasource.dart';
+import '../models/article_model.dart';
 
 class NewsRepositoryImpl implements NewsRepository {
   final NewsDataSource dataSource;
@@ -71,6 +72,18 @@ class NewsRepositoryImpl implements NewsRepository {
     try {
       final articles = await dataSource.getBreakingNews();
       return Right(articles);
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message));
+    } catch (e) {
+      return Left(ServerFailure(e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, void>> createArticle(Article article) async {
+    try {
+      await dataSource.createArticle(ArticleModel.fromEntity(article));
+      return const Right(null);
     } on ServerException catch (e) {
       return Left(ServerFailure(e.message));
     } catch (e) {

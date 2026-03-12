@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../core/di/injection_container.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../domain/entities/article.dart';
+import '../../domain/usecases/create_article.dart';
 
 class CreateArticlePage extends StatefulWidget {
   const CreateArticlePage({super.key});
@@ -12,7 +15,7 @@ class CreateArticlePage extends StatefulWidget {
 class _CreateArticlePageState extends State<CreateArticlePage> {
   final _titleController = TextEditingController();
   final _contentController = TextEditingController();
-  String? _attachedImagePath;
+  bool _isLoading = false;
 
   @override
   void dispose() {
@@ -21,7 +24,7 @@ class _CreateArticlePageState extends State<CreateArticlePage> {
     super.dispose();
   }
 
-  void _onPublish() {
+  Future<void> _onPublish() async {
     final title = _titleController.text.trim();
     final content = _contentController.text.trim();
 
@@ -32,37 +35,69 @@ class _CreateArticlePageState extends State<CreateArticlePage> {
       return;
     }
 
-    // Show preview / confirm
-    showDialog(
+    final confirmed = await showDialog<bool>(
       context: context,
       builder: (_) => AlertDialog(
         title: const Text('Publish Article'),
-        content: Text(
-          'Are you sure you want to publish "$title"?',
-        ),
+        content: Text('Are you sure you want to publish "$title"?'),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => Navigator.pop(context, false),
             child: const Text('Cancel'),
           ),
           FilledButton(
             style: FilledButton.styleFrom(
               backgroundColor: AppColors.fabPurple,
             ),
-            onPressed: () {
-              Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Article published successfully!'),
-                  backgroundColor: Colors.green,
-                ),
-              );
-              context.pop();
-            },
+            onPressed: () => Navigator.pop(context, true),
             child: const Text('Publish'),
           ),
         ],
       ),
+    );
+
+    if (confirmed != true || !mounted) return;
+
+    setState(() => _isLoading = true);
+
+    final article = Article(
+      id: '',
+      title: title,
+      description: content.length > 150 ? '${content.substring(0, 150)}...' : content,
+      content: content,
+      author: 'NewsFlow User',
+      sourceName: 'NewsFlow',
+      sourceId: 'newsflow',
+      category: 'general',
+      thumbnailURL: 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=800',
+      publishedAt: DateTime.now(),
+      url: '',
+      isBreaking: false,
+      tags: [],
+      views: 0,
+    );
+
+    final result = await sl<CreateArticle>()(article);
+
+    if (!mounted) return;
+    setState(() => _isLoading = false);
+
+    result.fold(
+      (failure) => ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error: ${failure.message}'),
+          backgroundColor: Colors.red,
+        ),
+      ),
+      (_) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Article published successfully!'),
+            backgroundColor: Colors.green,
+          ),
+        );
+        context.pop();
+      },
     );
   }
 
@@ -92,15 +127,13 @@ class _CreateArticlePageState extends State<CreateArticlePage> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Title field — matches Figma card style
+                        // Title field
                         Container(
                           decoration: BoxDecoration(
                             color: theme.cardTheme.color,
                             borderRadius: BorderRadius.circular(12),
                             border: Border.all(
-                              color: isDark
-                                  ? Colors.white12
-                                  : Colors.black12,
+                              color: isDark ? Colors.white12 : Colors.black12,
                             ),
                           ),
                           child: TextField(
@@ -116,62 +149,43 @@ class _CreateArticlePageState extends State<CreateArticlePage> {
                         ),
                         const SizedBox(height: 16),
 
-                        // Attach image button — matches Figma
-                        GestureDetector(
-                          onTap: () {
-                            // Image picker would go here
-                            setState(
-                                () => _attachedImagePath = 'placeholder');
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text(
-                                    'Image picker requires firebase_storage setup'),
-                              ),
-                            );
-                          },
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 20, vertical: 10),
-                            decoration: BoxDecoration(
-                              color: AppColors.attachButton
-                                  .withValues(alpha: 0.3),
-                              borderRadius: BorderRadius.circular(24),
-                              border: Border.all(
-                                  color: AppColors.fabPurple
-                                      .withValues(alpha: 0.4)),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(Icons.add_photo_alternate_outlined,
-                                    color: AppColors.fabPurple, size: 20),
-                                const SizedBox(width: 8),
-                                Text(
-                                  _attachedImagePath != null
-                                      ? 'Image attached'
-                                      : 'Attach Image',
-                                  style: TextStyle(
-                                    color: AppColors.fabPurple,
-                                    fontWeight: FontWeight.w600,
-                                    fontSize: 14,
-                                  ),
+                        // Attach image button
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 20, vertical: 10),
+                          decoration: BoxDecoration(
+                            color: AppColors.attachButton.withValues(alpha: 0.3),
+                            borderRadius: BorderRadius.circular(24),
+                            border: Border.all(
+                                color: AppColors.fabPurple.withValues(alpha: 0.4)),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.add_photo_alternate_outlined,
+                                  color: AppColors.fabPurple, size: 20),
+                              const SizedBox(width: 8),
+                              Text(
+                                'Attach Image',
+                                style: TextStyle(
+                                  color: AppColors.fabPurple,
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 14,
                                 ),
-                              ],
-                            ),
+                              ),
+                            ],
                           ),
                         ),
                         const SizedBox(height: 16),
 
-                        // Content area — matches Figma big text box
+                        // Content area
                         Container(
                           constraints: const BoxConstraints(minHeight: 300),
                           decoration: BoxDecoration(
                             color: theme.cardTheme.color,
                             borderRadius: BorderRadius.circular(12),
                             border: Border.all(
-                              color: isDark
-                                  ? Colors.white12
-                                  : Colors.black12,
+                              color: isDark ? Colors.white12 : Colors.black12,
                             ),
                           ),
                           child: TextField(
@@ -195,25 +209,29 @@ class _CreateArticlePageState extends State<CreateArticlePage> {
             ),
           ),
 
-          // Bottom "Publish Article" bar — matches Figma
+          // Bottom "Publish Article" bar
           GestureDetector(
-            onTap: _onPublish,
+            onTap: _isLoading ? null : _onPublish,
             child: Container(
               width: double.infinity,
-              padding:
-                  const EdgeInsets.symmetric(vertical: 20, horizontal: 24),
-              color: isDark
-                  ? AppColors.publishBarDark
-                  : AppColors.publishBar,
+              padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 24),
+              color: isDark ? AppColors.publishBarDark : AppColors.publishBar,
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.login,
-                      color: isDark ? Colors.white70 : Colors.black87,
-                      size: 20),
+                  if (_isLoading)
+                    const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  else
+                    Icon(Icons.send_outlined,
+                        color: isDark ? Colors.white70 : Colors.black87,
+                        size: 20),
                   const SizedBox(width: 10),
                   Text(
-                    'Publish Article',
+                    _isLoading ? 'Publishing...' : 'Publish Article',
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,

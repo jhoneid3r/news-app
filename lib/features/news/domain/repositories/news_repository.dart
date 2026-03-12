@@ -11,4 +11,5 @@ abstract class NewsRepository {
   Future<Either<Failure, Article>> getArticleById(String id);
   Future<Either<Failure, List<Article>>> searchArticles(String query);
   Future<Either<Failure, List<Article>>> getBreakingNews();
+  Future<Either<Failure, void>> createArticle(Article article);
 }

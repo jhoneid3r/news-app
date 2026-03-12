@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/di/injection_container.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/date_formatter.dart';
@@ -199,11 +200,16 @@ class _Content extends StatelessWidget {
             ),
           ),
 
-          // Bottom "Publish Article" bar — matches Figma
+          // Bottom bar — open original article
           _PublishBar(
             label: 'Read full article',
             icon: Icons.open_in_browser,
-            onTap: () {},
+            onTap: () async {
+              final url = Uri.tryParse(article.url);
+              if (url != null && await canLaunchUrl(url)) {
+                await launchUrl(url, mode: LaunchMode.externalApplication);
+              }
+            },
           ),
         ],
       ),

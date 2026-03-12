@@ -6,6 +6,7 @@ abstract class NewsDataSource {
   Future<ArticleModel> getArticleById(String id);
   Future<List<ArticleModel>> searchArticles(String query);
   Future<List<ArticleModel>> getBreakingNews();
+  Future<void> createArticle(ArticleModel article);
 }
 
 class NewsMockDataSource implements NewsDataSource {
@@ -213,5 +214,11 @@ class NewsMockDataSource implements NewsDataSource {
   Future<List<ArticleModel>> getBreakingNews() async {
     await Future.delayed(const Duration(milliseconds: 400));
     return _articles.where((a) => a.isBreaking).toList();
+  }
+
+  @override
+  Future<void> createArticle(ArticleModel article) async {
+    await Future.delayed(const Duration(milliseconds: 300));
+    _articles.insert(0, article);
   }
 }
