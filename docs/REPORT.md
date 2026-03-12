@@ -14,7 +14,7 @@ Since Flutter was new to me at this depth, I had to learn a lot in a short time.
 
 - **YouTube courses** — short, focused tutorials to get up to speed quickly on Flutter widgets, navigation, and state management.
 - **Flutter official documentation** — the Flutter docs are excellent and I referenced them constantly throughout development.
-- **AI assistance** — I used AI tools to better understand certain concepts, clarify doubts, and work through architectural decisions faster.
+- **AI assistance** — used to understand concepts faster, clarify doubts, and work through architectural decisions. More on this in the next section.
 
 Coming from React Native, the mental model shift to Flutter was smoother than expected. Flutter's widget tree felt more structured and predictable than JSX components. The fact that everything is a widget — padding, styling, layout — made the UI code more consistent and easier to reason about.
 
@@ -22,7 +22,27 @@ For Firebase specifically, I had to learn Firestore's document/collection model,
 
 ---
 
-## 3. Challenges Faced
+## 3. AI-Driven Development
+
+This entire application was built from scratch using AI — specifically **Claude Code** by Anthropic.
+
+This was a deliberate choice, and one I believe reflects where software development is heading. My view is that **today it is no longer strictly necessary to learn every new technology from scratch before using it productively**. What matters more is knowing how to work with AI effectively so it can do the heavy lifting while you stay in control of the direction and quality of the output.
+
+That said, working with AI is not just typing prompts and accepting whatever comes back. During this project I applied the following practices:
+
+- **Review everything the AI produces.** I read every file, every function, every change before accepting it. AI can generate plausible-looking code that has subtle bugs or architectural mismatches with the rest of the project.
+- **Give precise, contextual instructions.** Vague prompts produce vague results. The more specific the instruction — including constraints, existing patterns, and expected behavior — the better the output.
+- **Catch and correct mistakes.** There were serialization bugs, missing imports, firestore rule misconfigurations, and more. Identifying these required understanding the codebase well enough to spot when something was wrong, even if AI wrote it.
+- **Own the architecture.** The high-level decisions — Clean Architecture, BLoC, the Firestore schema design, the Storage folder structure — were guided and validated by me. AI executes; the developer directs.
+- **Iterate, don't just accept.** When a generated solution did not fit, I pushed back with specific feedback rather than working around bad output.
+
+The result is a fully functional, production-quality Flutter application connected to a real Firebase backend — built in a fraction of the time it would have taken learning Flutter and Firestore from zero in the traditional way.
+
+This is not about replacing developer knowledge. It is about **leveraging AI as a force multiplier** — and knowing how to use that multiplier responsibly is itself a skill worth developing.
+
+---
+
+## 4. Challenges Faced
 
 Honestly, the hardest part of the entire project was the **initial setup and environment configuration**. This is something every developer knows but nobody talks about enough — getting all the tools, SDKs, CLI versions, and dependencies aligned and working together took significant time. There were always small issues: outdated packages, SDK version conflicts, environment variables not set correctly, Firebase CLI not detecting the project directory. Every time one thing was fixed, another would surface.
 
@@ -30,7 +50,7 @@ Once the environment was stable, development itself was much smoother. But that 
 
 ---
 
-## 4. Reflection and Future Directions
+## 5. Reflection and Future Directions
 
 ### What I Enjoyed
 
@@ -53,7 +73,7 @@ If I started this project from scratch, I would **connect Firebase from day one*
 
 ---
 
-## 5. Project Demo
+## 6. Project Demo
 
 ### Screenshots
 
@@ -65,7 +85,7 @@ If I started this project from scratch, I would **connect Firebase from day one*
 
 ---
 
-## 6. Overdelivery
+## 7. Overdelivery
 
 Beyond the core requirements, several additional features were implemented:
 
@@ -85,7 +105,7 @@ A `ThemeCubit` was implemented that cycles through light → dark → system the
 
 ### Shimmer Loading Skeletons
 
-Instead of a plain spinner, the app shows animated shimmer placeholders while articles are loading. This improves perceived performance and gives the app a more polished feel.
+Instead of a plain spinner, the app shows animated shimmer placeholders while articles are loading — including when switching categories, where a shimmer replaces the list until the new data arrives. This improves perceived performance and gives the app a more polished feel.
 
 ### Swipe-to-Delete on Bookmarks
 
@@ -135,7 +155,7 @@ The key benefit: swapping Firebase for any other backend only requires changing 
 
 ---
 
-## 7. Additional Notes
+## 8. Additional Notes
 
 ### Tech Stack Summary
 
@@ -150,6 +170,7 @@ The key benefit: swapping Firebase for any other backend only requires changing 
 | Local Persistence | SharedPreferences |
 | Image Loading | CachedNetworkImage |
 | Architecture | Clean Architecture |
+| AI Tool | Claude Code (Anthropic) |
 
 ### Repository
 
