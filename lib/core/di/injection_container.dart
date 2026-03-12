@@ -12,6 +12,7 @@ import '../../features/news/data/datasources/news_firestore_datasource.dart';
 import '../../features/news/data/datasources/news_mock_datasource.dart';
 import '../../features/news/data/repositories/news_repository_impl.dart';
 import '../../features/news/domain/repositories/news_repository.dart';
+import '../../features/news/domain/usecases/create_article.dart';
 import '../../features/news/domain/usecases/get_article_by_id.dart';
 import '../../features/news/domain/usecases/get_articles_by_category.dart';
 import '../../features/news/domain/usecases/get_breaking_news.dart';
@@ -56,6 +57,7 @@ Future<void> initDependencies() async {
   sl.registerLazySingleton(() => GetArticlesByCategory(sl()));
   sl.registerLazySingleton(() => GetArticleById(sl()));
   sl.registerLazySingleton(() => SearchArticles(sl()));
+  sl.registerLazySingleton(() => CreateArticle(sl()));
   sl.registerLazySingleton(() => GetBookmarks(sl()));
   sl.registerLazySingleton(() => ToggleBookmark(sl()));
 

@@ -63,4 +63,23 @@ class NewsFirestoreDataSource implements NewsDataSource {
         .get();
     return snap.docs.map(ArticleModel.fromFirestore).toList();
   }
+
+  @override
+  Future<void> createArticle(ArticleModel article) async {
+    await _articles.add({
+      'title': article.title,
+      'description': article.description,
+      'content': article.content,
+      'author': article.author,
+      'sourceName': article.sourceName,
+      'sourceId': article.sourceId,
+      'category': article.category,
+      'thumbnailURL': article.thumbnailURL,
+      'publishedAt': Timestamp.fromDate(article.publishedAt),
+      'url': article.url,
+      'isBreaking': article.isBreaking,
+      'tags': article.tags,
+      'views': article.views,
+    });
+  }
 }
