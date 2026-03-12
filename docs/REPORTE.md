@@ -2,7 +2,7 @@
 
 ## 1. Introducción
 
-Al iniciar este proyecto, cuento con aproximadamente 5 años de experiencia en programación, trabajando principalmente en desarrollo móvil multiplataforma con React Native. Había explorado Flutter de forma superficial antes, pero nunca había construido algo significativo con él — este proyecto fue mi primera inmersión real en el framework.
+Al iniciar este proyecto, cuento con aproximadamente 5 años de experiencia en programación,. Había explorado Flutter de forma superficial antes, pero nunca había construido algo significativo con este — este proyecto fue mi primera inmersión real en el framework.
 
 En cuanto al backend, no partí desde cero con Firebase. Anteriormente había trabajado con Firebase Cloud Messaging para notificaciones push, así que ya me sentía cómodo con el ecosistema de Firebase en general. Sin embargo, Firestore y Firebase Cloud Storage eran servicios que nunca había utilizado, por lo que este proyecto me llevó a territorio nuevo tanto en el frontend como en el backend.
 
@@ -16,7 +16,7 @@ Como Flutter era nuevo para mí a este nivel, tuve que aprender bastante en poco
 - **Documentación oficial de Flutter** — la documentación de Flutter es excelente y la consulté constantemente durante el desarrollo.
 - **Asistencia con IA** — utilizada para entender conceptos más rápido, aclarar dudas y tomar decisiones arquitectónicas. Más sobre esto en la siguiente sección.
 
-Viniendo de React Native, la transición mental a Flutter fue más fluida de lo esperado. El árbol de widgets de Flutter se sintió más estructurado y predecible que los componentes JSX. El hecho de que todo sea un widget — padding, estilos, layout — hizo que el código de UI fuera más consistente y fácil de razonar.
+La transición mental a Flutter fue más fluida de lo esperado. El árbol de widgets de Flutter se sintió más estructurado y predecible que los componentes JSX. El hecho de que todo sea un widget — padding, estilos, layout — hizo que el código de UI fuera más consistente y fácil de razonar.
 
 Para Firebase específicamente, tuve que aprender el modelo de documentos y colecciones de Firestore, la sintaxis de las reglas de seguridad y la API de Cloud Storage. La CLI de FlutterFire hizo que la conexión inicial entre Flutter y Firebase fuera sorprendentemente sencilla.
 
@@ -36,7 +36,7 @@ Dicho esto, trabajar con IA no es simplemente escribir prompts y aceptar lo que 
 - **Ser dueño de la arquitectura.** Las decisiones de alto nivel — Clean Architecture, BLoC, el diseño del esquema de Firestore, la estructura de carpetas en Storage — fueron guiadas y validadas por mí. La IA ejecuta; el desarrollador dirige.
 - **Iterar, no solo aceptar.** Cuando una solución generada no encajaba, respondía con feedback específico en lugar de trabajar alrededor de un resultado malo.
 
-El resultado es una aplicación Flutter completamente funcional y de calidad de producción, conectada a un backend real de Firebase — construida en una fracción del tiempo que hubiera tomado aprender Flutter y Firestore desde cero de manera tradicional.
+El resultado es una aplicación Flutter completamente funcional, conectada a un backend real de Firebase — construida en una fracción del tiempo que hubiera tomado aprender Flutter y Firestore desde cero de manera tradicional.
 
 No se trata de reemplazar el conocimiento del desarrollador. Se trata de **usar la IA como multiplicador de fuerza** — y saber usar ese multiplicador de forma responsable es en sí mismo una habilidad que vale la pena desarrollar.
 
