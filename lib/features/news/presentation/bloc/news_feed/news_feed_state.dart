@@ -19,12 +19,14 @@ class NewsFeedLoaded extends NewsFeedState {
   final List<Article> breaking;
   final List<Article> categoryArticles;
   final String selectedCategory;
+  final bool isLoadingCategory;
 
   const NewsFeedLoaded({
     required this.headlines,
     required this.breaking,
     required this.categoryArticles,
     required this.selectedCategory,
+    this.isLoadingCategory = false,
   });
 
   @override
@@ -33,6 +35,7 @@ class NewsFeedLoaded extends NewsFeedState {
         breaking,
         categoryArticles,
         selectedCategory,
+        isLoadingCategory,
       ];
 
   NewsFeedLoaded copyWith({
@@ -40,12 +43,14 @@ class NewsFeedLoaded extends NewsFeedState {
     List<Article>? breaking,
     List<Article>? categoryArticles,
     String? selectedCategory,
+    bool? isLoadingCategory,
   }) =>
       NewsFeedLoaded(
         headlines: headlines ?? this.headlines,
         breaking: breaking ?? this.breaking,
         categoryArticles: categoryArticles ?? this.categoryArticles,
         selectedCategory: selectedCategory ?? this.selectedCategory,
+        isLoadingCategory: isLoadingCategory ?? this.isLoadingCategory,
       );
 }
 

@@ -167,27 +167,35 @@ class _LoadedView extends StatelessWidget {
           ),
 
           // Articles
-          SliverList(
-            delegate: SliverChildBuilderDelegate(
-              (context, index) {
-                final articles = state.categoryArticles.isNotEmpty
-                    ? state.categoryArticles
-                    : state.headlines;
-                if (index >= articles.length) return null;
-                return Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-                  child: ArticleCard(
-                    article: articles[index],
-                    compact: true,
-                  ),
-                );
-              },
-              childCount: (state.categoryArticles.isNotEmpty
+          if (state.isLoadingCategory)
+            const SliverToBoxAdapter(
+              child: Padding(
+                padding: EdgeInsets.fromLTRB(16, 0, 16, 0),
+                child: ArticleShimmer(),
+              ),
+            )
+          else
+            SliverList(
+              delegate: SliverChildBuilderDelegate(
+                (context, index) {
+                  final articles = state.categoryArticles.isNotEmpty
                       ? state.categoryArticles
-                      : state.headlines)
-                  .length,
+                      : state.headlines;
+                  if (index >= articles.length) return null;
+                  return Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+                    child: ArticleCard(
+                      article: articles[index],
+                      compact: true,
+                    ),
+                  );
+                },
+                childCount: (state.categoryArticles.isNotEmpty
+                        ? state.categoryArticles
+                        : state.headlines)
+                    .length,
+              ),
             ),
-          ),
 
           const SliverToBoxAdapter(child: SizedBox(height: 24)),
         ],

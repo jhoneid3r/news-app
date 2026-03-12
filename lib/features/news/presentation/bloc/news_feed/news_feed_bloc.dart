@@ -48,14 +48,18 @@ class NewsFeedBloc extends Bloc<NewsFeedEvent, NewsFeedState> {
     final current = state;
     if (current is NewsFeedLoaded) {
       // Show loading for category only
-      emit(current.copyWith(selectedCategory: event.category, categoryArticles: []));
+      emit(current.copyWith(
+        selectedCategory: event.category,
+        categoryArticles: [],
+        isLoadingCategory: true,
+      ));
     }
 
     final result = await getArticlesByCategory(event.category);
     result.fold(
       (failure) {
         if (state is NewsFeedLoaded) {
-          // Keep the rest of the state intact, just show empty for this category
+          emit((state as NewsFeedLoaded).copyWith(isLoadingCategory: false));
         }
       },
       (articles) {
@@ -64,6 +68,7 @@ class NewsFeedBloc extends Bloc<NewsFeedEvent, NewsFeedState> {
             (state as NewsFeedLoaded).copyWith(
               categoryArticles: articles,
               selectedCategory: event.category,
+              isLoadingCategory: false,
             ),
           );
         }
