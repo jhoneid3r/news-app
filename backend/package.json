@@ -1,0 +1,10 @@
+{
+  "name": "news-backend",
+  "version": "1.0.0",
+  "scripts": {
+    "seed": "node scripts/seed.js"
+  },
+  "dependencies": {
+    "firebase-admin": "^13.7.0"
+  }
+}

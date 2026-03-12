@@ -1,0 +1,28 @@
+{
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "news-app-e32c3",
+          "appId": "1:760134248168:android:97080840e5889e9640cb5d",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "news-app-e32c3",
+          "configurations": {
+            "android": "1:760134248168:android:97080840e5889e9640cb5d",
+            "ios": "1:760134248168:ios:9b7ddefe78ab52bb40cb5d"
+          }
+        }
+      }
+    }
+  },
+  "firestore": {
+    "database": "(default)",
+    "location": "nam5",
+    "rules": "firestore.rules",
+    "indexes": "firestore.indexes.json"
+  }
+}

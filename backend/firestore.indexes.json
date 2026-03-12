@@ -12,7 +12,7 @@
       "collectionGroup": "articles",
       "queryScope": "COLLECTION",
       "fields": [
-        { "fieldPath": "isBreaking", "order": "DESCENDING" },
+        { "fieldPath": "isBreaking", "order": "ASCENDING" },
         { "fieldPath": "publishedAt", "order": "DESCENDING" }
       ]
     },

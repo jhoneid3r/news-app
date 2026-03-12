@@ -19,7 +19,13 @@
       "Bash(cd /c/Users/jhone/OneDrive/Escritorio/flutter/news && flutter run -d emulator-5554 2>&1)",
       "Bash(cd /c/Users/jhone/OneDrive/Escritorio/flutter/news && flutter analyze lib/core/theme/theme_cubit.dart lib/app.dart lib/features/news/presentation/pages/home_page.dart 2>&1 | grep -v \"^info\")",
       "WebFetch(domain:www.figma.com)",
-      "Bash(cd /c/Users/jhone/OneDrive/Escritorio/flutter/news && flutter analyze lib/ 2>&1 | grep \"error\")"
+      "Bash(cd /c/Users/jhone/OneDrive/Escritorio/flutter/news && flutter analyze lib/ 2>&1 | grep \"error\")",
+      "Bash(cd /c/Users/jhone/OneDrive/Escritorio/flutter/news && dart pub global activate flutterfire_cli 2>&1)",
+      "Bash(cd /c/Users/jhone/OneDrive/Escritorio/flutter/news && \"$APPDATA/Local/Pub/Cache/bin/flutterfire\" configure 2>&1)",
+      "Bash(cd /c/Users/jhone/OneDrive/Escritorio/flutter/news && \"/c/Users/jhone/AppData/Local/Pub/Cache/bin/flutterfire.bat\" configure 2>&1)",
+      "Bash(cd /c/Users/jhone/OneDrive/Escritorio/flutter/news && flutter analyze lib/main.dart lib/core/di/injection_container.dart 2>&1 | grep \"error\")",
+      "Bash(cd /c/Users/jhone/OneDrive/Escritorio/flutter/news/backend && node -e \"\nconst fs = require\\('fs'\\);\nfs.writeFileSync\\('package.json', JSON.stringify\\({name:'news-backend',version:'1.0.0',scripts:{seed:'node scripts/seed.js'}}, null, 2\\)\\);\nconsole.log\\('package.json created'\\);\n\" && npm install firebase-admin 2>&1 | tail -5)",
+      "Bash(cd /c/Users/jhone/OneDrive/Escritorio/flutter/news/backend && node scripts/seed.js 2>&1)"
     ]
   }
 }
