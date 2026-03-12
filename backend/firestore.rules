@@ -32,10 +32,9 @@ service cloud.firestore {
       // Anyone (even unauthenticated) can read articles
       allow read: if true;
 
-      // Only authenticated users can create/update/delete articles
-      // In production, restrict further to admin claims:
-      // request.auth.token.admin == true
-      allow create: if isAuthenticated() && isValidArticle();
+      // Create is open (no auth required) for demo/test purposes
+      // In production, restrict to: isAuthenticated() && isValidArticle()
+      allow create: if isValidArticle();
       allow update: if isAuthenticated() && isValidArticle();
       allow delete: if isAuthenticated();
     }
