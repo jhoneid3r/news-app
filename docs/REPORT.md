@@ -1,163 +1,158 @@
-# NewsFlow — Technical Report
+# NewsFlow — Project Report
 
-## Overview
+## 1. Introduction
 
-NewsFlow is a cross-platform news reader built with Flutter, following **Clean Architecture** principles, **BLoC** for state management, and **Firebase** as the backend (Firestore + Cloud Storage).
+Coming into this project, I have around 5 years of programming experience, mostly working with cross-platform mobile development using React Native. I had briefly explored Flutter before, but never built anything substantial with it — this project was my first real deep dive into the framework.
 
----
-
-## 1. Backend
-
-### 1.1 Schema Design
-
-The schema was designed around a single `articles` Firestore collection:
-
-- **Flat structure** rather than sub-collections — all query patterns (by category, by date, breaking news) only require one collection level.
-- **`thumbnailURL` as a Storage download URL** pointing to `media/articles/{articleId}.jpg` — clients load images directly without extra SDK calls per list item.
-- **`tags` array** enabling `array-contains` queries for keyword filtering.
-- **`isBreaking` boolean** for efficient breaking-news queries without a separate collection.
-- **`views` counter** on the document for read counts.
-
-Full schema: `backend/docs/DB_SCHEMA.md`
-
-### 1.2 Schema Implementation
-
-Firestore was seeded with 8 real articles via `backend/scripts/seed.js`. The seed script:
-
-1. Downloads thumbnail images from Unsplash.
-2. Uploads each image to Firebase Cloud Storage at `media/articles/{articleId}.jpg`.
-3. Makes the file public and retrieves the download URL.
-4. Saves the article document to Firestore with the Storage URL in `thumbnailURL`.
-
-This means the app loads thumbnails entirely from Firebase Storage — no third-party image CDN dependency at runtime.
-
-### 1.3 Firestore Rules
-
-Rules are deployed to the `news-app-e32c3` project and enforce:
-
-1. **Public read** on `articles` and `categories` — no authentication required to browse news.
-2. **Schema-validated create** on `articles` — any client can submit an article only if it passes `isValidArticle()` (all required fields present and correctly typed).
-3. **Authenticated update/delete** on `articles` — modifications require a signed-in user.
-4. **User-scoped bookmarks** at `/users/{userId}/bookmarks` — users can only access their own data.
-
-Rules source: `backend/firestore.rules`
-Deploy command: `firebase deploy --only firestore:rules`
+On the backend side, I was not starting from zero with Firebase. I had previously worked with Firebase Cloud Messaging for push notifications, so I was comfortable with the Firebase ecosystem in general. However, Firestore and Firebase Cloud Storage were services I had never used before, so this project pushed me into new territory on both the frontend and backend sides.
 
 ---
 
-## 2. Frontend Architecture
+## 2. Learning Journey
 
-### Clean Architecture Layers
+Since Flutter was new to me at this depth, I had to learn a lot in a short time. My main resources were:
 
-```
-lib/
-  core/               ← Shared infrastructure (theme, DI, router, constants)
-  features/
-    news/
-      domain/         ← Entities, repository interfaces, use cases
-      data/           ← Models, datasources (mock + Firestore), repository impl
-      presentation/   ← BLoC/Cubit, pages, widgets
-    bookmarks/
-      domain/
-      data/
-      presentation/
-```
+- **YouTube courses** — short, focused tutorials to get up to speed quickly on Flutter widgets, navigation, and state management.
+- **Flutter official documentation** — the Flutter docs are excellent and I referenced them constantly throughout development.
+- **AI assistance** — I used AI tools to better understand certain concepts, clarify doubts, and work through architectural decisions faster.
 
-**Dependency rule:** outer layers depend on inner layers; inner layers never import from outer ones. The domain layer has zero Flutter/Firebase dependencies.
+Coming from React Native, the mental model shift to Flutter was smoother than expected. Flutter's widget tree felt more structured and predictable than JSX components. The fact that everything is a widget — padding, styling, layout — made the UI code more consistent and easier to reason about.
 
-### 2.1 Business Layer — Use Cases
-
-| Use Case | Description |
-|---|---|
-| `GetTopHeadlines` | Fetches all articles sorted by date |
-| `GetBreakingNews` | Fetches articles where `isBreaking == true` |
-| `GetArticlesByCategory` | Filters by category field |
-| `SearchArticles` | Client-side prefix match on title/description/tags |
-| `CreateArticle` | Saves a new article to Firestore (+ Storage upload for image) |
-| `GetBookmarks` | Reads bookmarks from local SharedPreferences |
-| `SaveBookmark` | Persists an article bookmark locally |
-| `RemoveBookmark` | Deletes a bookmark by article ID |
-
-The mock datasource (`NewsMockDataSource`) was used during UI development; swapping to the real Firestore datasource required changing **one line** in `injection_container.dart`.
-
-### 2.2 Presentation Layer — State Management
-
-| BLoC / Cubit | Responsibility |
-|---|---|
-| `NewsFeedBloc` | Home feed: headlines, breaking news, category filter |
-| `ArticleDetailCubit` | Loads and exposes a single article |
-| `SearchBloc` | Real-time article search |
-| `BookmarksCubit` | Bookmark CRUD, persisted via `shared_preferences` |
-| `ThemeCubit` | Cycles through light → dark → system theme modes, persisted |
-
-All events and states extend `Equatable` to prevent redundant widget rebuilds.
-
-### UI Decisions
-
-- **Breaking news PageView** — prominent placement at the top of the feed for `isBreaking` articles.
-- **Category filter bar** — color-coded animated chips; each category has a distinct accent color.
-- **Shimmer loading skeletons** — better perceived-performance than a spinner.
-- **Swipe-to-delete** on the bookmarks list (`Dismissible` widget).
-- **`CachedNetworkImage`** for thumbnails, with placeholder and error fallback.
-- **Pull-to-refresh** on the home feed.
-- **Dark / Light / System theme** toggle in the app bar, state persisted across sessions.
-- **FAB** for quick article creation on the home screen.
-
-### 2.3 Data Layer — Firebase Integration
-
-Firebase is fully integrated and active:
-
-- `lib/firebase_options.dart` — generated by FlutterFire CLI, contains project config.
-- `lib/main.dart` — calls `Firebase.initializeApp()` before `runApp`.
-- `NewsFirestoreDataSource` — reads from and writes to Firestore.
-- `CreateArticle` page — picks an image from the gallery, uploads to Firebase Storage (`media/articles/user_{timestamp}.jpg`), and saves the article to Firestore with the Storage URL.
-- Bookmarks are stored locally via `shared_preferences` (no auth required).
-
-Switching back to mock data only requires changing one line in `injection_container.dart` — the domain and presentation layers are completely unaffected.
+For Firebase specifically, I had to learn Firestore's document/collection model, security rules syntax, and the Cloud Storage API. The FlutterFire CLI made the initial Firebase-Flutter connection surprisingly straightforward.
 
 ---
 
-## 3. Create Article Flow (Extra Feature)
+## 3. Challenges Faced
 
-The Create Article screen allows any user to publish a news article:
+Honestly, the hardest part of the entire project was the **initial setup and environment configuration**. This is something every developer knows but nobody talks about enough — getting all the tools, SDKs, CLI versions, and dependencies aligned and working together took significant time. There were always small issues: outdated packages, SDK version conflicts, environment variables not set correctly, Firebase CLI not detecting the project directory. Every time one thing was fixed, another would surface.
 
-1. Fill in title and content.
-2. Optionally tap **Attach Image** → gallery picker opens → preview shown.
-3. Tap **Publish Article** → confirmation dialog.
-4. On confirm: image is uploaded to Firebase Storage, article is saved to Firestore, user is taken back to the feed.
-
-This demonstrates the full write path: Storage upload → Firestore write → live in the feed.
+Once the environment was stable, development itself was much smoother. But that initial phase of fighting the toolchain was genuinely the most frustrating part of the experience.
 
 ---
 
-## 4. Challenges & Decisions
+## 4. Reflection and Future Directions
 
-| Challenge | Decision |
-|---|---|
-| Firestore full-text search limitation | Client-side prefix filtering (sufficient for current data size); recommended Algolia for production |
-| Article detail performance | Pass `Article` entity via `go_router` `extra` to skip a redundant Firestore read when navigating from the list |
-| Bookmark persistence without auth | `shared_preferences` for local storage; documented migration path to Firestore once auth is added |
-| Timestamp serialization bug | `toMap()` initially used `Firestore.Timestamp` (not JSON-serializable for SharedPreferences). Fixed to `.toIso8601String()`; `fromMap()` handles both formats |
-| Firestore rules blocking unauthenticated writes | Relaxed `create` rule to `isValidArticle()` only for demo. In production: require `isAuthenticated() && isValidArticle()` |
+### What I Enjoyed
 
----
+The most interesting part of the project was **connecting the Flutter frontend to Firebase**. There is something satisfying about seeing data you seeded in a Node.js script appear live in a mobile app — with images uploaded to Firebase Storage, URLs stored in Firestore, and the app rendering everything correctly. The full-stack loop from backend script to mobile UI felt complete.
 
-## 5. What I Would Add With More Time
+I also genuinely enjoyed Flutter more than I expected. Having used React Native before, I went in thinking the experience would be similar, but Flutter felt more intuitive and comfortable to work with. The widget system is consistent, the hot reload is fast, and the overall developer experience is polished.
 
-### Features
-- **Firebase Authentication** — Google/Apple sign-in; sync bookmarks across devices via Firestore sub-collection instead of SharedPreferences.
-- **Infinite scroll / pagination** — Firestore `startAfterDocument` cursor-based pagination for large datasets.
+### What I Would Do Differently
+
+If I started this project from scratch, I would **connect Firebase from day one** instead of building with mock data first. While the mock-first approach is architecturally clean and the datasource swap is easy, I spent extra time debugging integration issues that would have surfaced earlier if Firebase had been connected from the start. Starting with real data earlier would have caught schema mismatches and serialization bugs sooner.
+
+### Future Improvements
+
+- **Firebase Authentication** — Google/Apple sign-in, and syncing bookmarks across devices via Firestore instead of SharedPreferences.
+- **Pagination** — Firestore cursor-based pagination (`startAfterDocument`) for large article feeds.
 - **Push notifications** — Firebase Cloud Messaging for breaking news alerts.
-- **Full-text search** — Algolia or Typesense integration instead of client-side filtering.
-- **Article view tracking** — Increment `views` counter via a Firebase Cloud Function to avoid client-side race conditions.
+- **Full-text search** — Algolia or Typesense integration to replace the current client-side filtering.
+- **CI/CD pipeline** — GitHub Actions: analyze → test → build → Firebase App Distribution.
+- **Unit and widget tests** — Domain use-cases tested with `mocktail`, BLoC with `bloc_test`.
 
-### Technical
-- **CI/CD** — GitHub Actions: analyze → test → build → Firebase App Distribution.
-- **Unit tests** — Domain use-cases with `mocktail`; BLoC tested with `bloc_test`.
-- **Widget tests** — Key screens with `flutter_test`.
-- **Error monitoring** — Firebase Crashlytics.
-- **Analytics** — Firebase Analytics events for article opens, category switches, search queries.
+---
 
-### Architecture
-- **Offline-first** — Firestore's built-in offline persistence + a local SQLite layer for richer querying.
-- **Feature flags** — Firebase Remote Config for gradual rollouts without app store releases.
+## 5. Project Demo
+
+### Screenshots
+
+> *(Screenshots to be added)*
+
+### Video Demo
+
+> 📹 [Watch the full demo on Google Drive](#) *(link to be added)*
+
+---
+
+## 6. Overdelivery
+
+Beyond the core requirements, several additional features were implemented:
+
+### Image Upload When Creating an Article
+
+The Create Article screen allows users to attach an image from their device gallery. When published:
+
+1. The image is uploaded to Firebase Cloud Storage at `media/articles/user_{timestamp}.jpg`.
+2. The public download URL is saved to the article's `thumbnailURL` field in Firestore.
+3. The article appears immediately in the feed with the uploaded image.
+
+This demonstrates the full write path: device gallery → Storage → Firestore → live in the feed.
+
+### Theme Toggle (Light / Dark / System)
+
+A `ThemeCubit` was implemented that cycles through light → dark → system theme modes. The selected mode is persisted across app sessions using `SharedPreferences`, so the user's preference is remembered after closing the app.
+
+### Shimmer Loading Skeletons
+
+Instead of a plain spinner, the app shows animated shimmer placeholders while articles are loading. This improves perceived performance and gives the app a more polished feel.
+
+### Swipe-to-Delete on Bookmarks
+
+The bookmarks list supports swipe-to-delete using Flutter's `Dismissible` widget, with a red background and delete icon revealed on swipe — a native-feeling interaction.
+
+### Firebase Storage Seed Script
+
+The backend seed script (`backend/scripts/seed.js`) goes beyond inserting text data. It:
+
+1. Downloads images from Unsplash for each article.
+2. Uploads them to Firebase Cloud Storage under `media/articles/`.
+3. Saves the Storage public URL to Firestore's `thumbnailURL` field.
+
+This means the app has zero dependency on Unsplash or any third-party image CDN at runtime — all images are served from Firebase Storage.
+
+### Architecture Prototype — Clean Architecture Diagram
+
+The project follows Clean Architecture with three layers per feature:
+
+```
+┌─────────────────────────────────────────────┐
+│              Presentation Layer              │
+│         BLoC / Cubit · Pages · Widgets       │
+└────────────────────┬────────────────────────┘
+                     │ calls use cases
+┌────────────────────▼────────────────────────┐
+│               Domain Layer                   │
+│    Entities · Use Cases · Repository Interface│
+│         (zero Flutter/Firebase imports)       │
+└────────────────────┬────────────────────────┘
+                     │ implemented by
+┌────────────────────▼────────────────────────┐
+│                Data Layer                    │
+│   Models · Firestore DataSource · Repo Impl  │
+│         Mock DataSource (for testing)         │
+└─────────────────────────────────────────────┘
+```
+
+The key benefit: swapping Firebase for any other backend only requires changing the datasource registration in `injection_container.dart` — the domain and presentation layers are completely unaffected.
+
+### How to Improve Further
+
+- **Offline-first** — Firestore's built-in offline persistence already caches reads. Adding a local SQLite layer would allow richer offline querying and a fully functional offline mode.
+- **Firebase Remote Config** — Feature flags for gradual rollouts without requiring app store updates.
+- **Article analytics** — Firebase Analytics events for article opens, category switches, and search queries to understand user behavior.
+- **Distributed view counters** — Replace the current `views` field increment with a Firebase Cloud Function to avoid race conditions at scale.
+
+---
+
+## 7. Additional Notes
+
+### Tech Stack Summary
+
+| Layer | Technology |
+|---|---|
+| Frontend | Flutter (Dart) |
+| State Management | BLoC / Cubit |
+| Navigation | go_router |
+| Dependency Injection | GetIt |
+| Database | Firebase Firestore |
+| File Storage | Firebase Cloud Storage |
+| Local Persistence | SharedPreferences |
+| Image Loading | CachedNetworkImage |
+| Architecture | Clean Architecture |
+
+### Repository
+
+Both branches are available on GitHub:
+- `master` — main branch with full Firebase integration
+- `custom-design` — extended branch with additional UI polish and features
