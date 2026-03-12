@@ -175,5 +175,5 @@ The key benefit: swapping Firebase for any other backend only requires changing 
 ### Repository
 
 Both branches are available on GitHub:
-- `master` — main branch with full Firebase integration
-- `custom-design` — extended branch with additional UI polish and features
+- `master` — implements the design requested in the project brief, with full Firebase integration
+- `custom-design` — implements my own custom design, built to my personal taste with additional UI polish, animations, and extra features beyond the requirements
