@@ -29,10 +29,18 @@ class _CreateArticlePageState extends State<CreateArticlePage> {
   }
 
   Future<void> _pickImage() async {
-    final picker = ImagePicker();
-    final picked = await picker.pickImage(source: ImageSource.gallery, imageQuality: 80);
-    if (picked == null) return;
-    setState(() => _pickedImage = File(picked.path));
+    try {
+      final picker = ImagePicker();
+      final picked = await picker.pickImage(source: ImageSource.gallery, imageQuality: 80);
+      if (picked == null) return;
+      setState(() => _pickedImage = File(picked.path));
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Could not open gallery: $e')),
+        );
+      }
+    }
   }
 
   Future<String?> _uploadImage(File file) async {
