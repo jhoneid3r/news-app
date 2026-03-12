@@ -5,6 +5,8 @@
     "seed": "node scripts/seed.js"
   },
   "dependencies": {
-    "firebase-admin": "^13.7.0"
+    "@google-cloud/storage": "^7.19.0",
+    "firebase-admin": "^13.7.0",
+    "node-fetch": "^2.7.0"
   }
 }

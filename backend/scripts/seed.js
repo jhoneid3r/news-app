@@ -1,150 +1,66 @@
 const admin = require('firebase-admin');
+const fetch = require('node-fetch');
 const serviceAccount = require('../service-account.json');
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
+  storageBucket: serviceAccount.project_id + '.firebasestorage.app',
 });
 
 const db = admin.firestore();
+const bucket = admin.storage().bucket();
+const ARTICLES = require('./articles_data.json');
 
-const articles = [
-  {
-    title: 'Flutter 4.0 Released with Major Performance Improvements',
-    description: "Google's UI toolkit gets a massive update targeting sub-16ms frame rendering across all platforms.",
-    content: 'Flutter 4.0 introduces Impeller 2.0, achieving sub-16ms frame rendering. Key highlights: 40% reduction in app startup time, native interop improvements, new adaptive widgets, and enhanced web performance with WebAssembly compilation.',
-    author: 'Jane Doe',
-    sourceName: 'TechCrunch',
-    sourceId: 'techcrunch',
-    category: 'technology',
-    thumbnailURL: 'https://images.unsplash.com/photo-1555949963-aa79dcee981c?w=800',
-    publishedAt: admin.firestore.Timestamp.fromDate(new Date(Date.now() - 2 * 60 * 60 * 1000)),
-    url: 'https://techcrunch.com/flutter-4-0',
-    isBreaking: true,
-    tags: ['flutter', 'google', 'mobile', 'performance'],
-    views: 12400,
-  },
-  {
-    title: 'Global Markets Rally as Inflation Data Shows Cooling Trend',
-    description: 'World stock markets surged after inflation fell to its lowest level in three years.',
-    content: 'Stock markets surged after the latest CPI data showed inflation cooling to 2.3%. The S&P 500 rose 2.1%, the Dow Jones gained 1.8%, and the Nasdaq jumped 2.7%. The Federal Reserve is expected to respond with a rate cut.',
-    author: 'Mark Johnson',
-    sourceName: 'Reuters',
-    sourceId: 'reuters',
-    category: 'business',
-    thumbnailURL: 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=800',
-    publishedAt: admin.firestore.Timestamp.fromDate(new Date(Date.now() - 4 * 60 * 60 * 1000)),
-    url: 'https://reuters.com/markets-rally',
-    isBreaking: false,
-    tags: ['markets', 'inflation', 'economy', 'stocks'],
-    views: 8900,
-  },
-  {
-    title: 'Scientists Discover Breakthrough in Alzheimer Treatment',
-    description: 'A new protein compound shows unprecedented results halting cognitive decline in early-stage trials.',
-    content: 'Researchers at the Mayo Clinic announced compound ClearMind-7, shown to halt cognitive decline in 78% of early-stage Alzheimer patients and reverse symptoms in 34% over 18 months. The FDA granted Breakthrough Therapy designation.',
-    author: 'Dr. Rachel Kim',
-    sourceName: 'Nature Medicine',
-    sourceId: 'nature',
-    category: 'health',
-    thumbnailURL: 'https://images.unsplash.com/photo-1576671081837-49000212a370?w=800',
-    publishedAt: admin.firestore.Timestamp.fromDate(new Date(Date.now() - 6 * 60 * 60 * 1000)),
-    url: 'https://nature.com/alzheimers-breakthrough',
-    isBreaking: true,
-    tags: ['alzheimers', 'health', 'medicine', 'research'],
-    views: 24600,
-  },
-  {
-    title: 'Champions League: Real Madrid Beats Manchester City in Epic Semifinal',
-    description: 'A stunning extra-time comeback sees Real Madrid advance to the Champions League final.',
-    content: 'Real Madrid overcame Manchester City 4-3 in extra time at the Bernabeu. Kylian Mbappe scored twice in extra time to seal one of the most remarkable European nights in recent memory. Real Madrid will face Bayern Munich in the final in Dublin.',
-    author: 'Carlos Mendez',
-    sourceName: 'BBC Sport',
-    sourceId: 'bbc-sport',
-    category: 'sports',
-    thumbnailURL: 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=800',
-    publishedAt: admin.firestore.Timestamp.fromDate(new Date(Date.now() - 8 * 60 * 60 * 1000)),
-    url: 'https://bbc.com/sport/football/champions-league',
-    isBreaking: false,
-    tags: ['football', 'champions-league', 'real-madrid'],
-    views: 45200,
-  },
-  {
-    title: 'SpaceX Launches First Crewed Mission to Mars Orbit',
-    description: 'History is made as four astronauts begin the 7-month journey to Mars.',
-    content: 'SpaceX launched its first crewed mission toward Mars with four astronauts from NASA and ESA. They will spend 7 months traveling to Mars orbit before returning to Earth, marking the first crewed deep-space mission beyond the Moon.',
-    author: 'Alex Thompson',
-    sourceName: 'NASA/SpaceX',
-    sourceId: 'nasa',
-    category: 'science',
-    thumbnailURL: 'https://images.unsplash.com/photo-1446776811953-b23d57bd21aa?w=800',
-    publishedAt: admin.firestore.Timestamp.fromDate(new Date(Date.now() - 12 * 60 * 60 * 1000)),
-    url: 'https://spacex.com/ares-i-launch',
-    isBreaking: true,
-    tags: ['spacex', 'mars', 'nasa', 'space', 'science'],
-    views: 89100,
-  },
-  {
-    title: 'Oscar Winner Announces Retirement from Acting at Age 45',
-    description: 'Award-winning actor Damian Cross stuns Hollywood with permanent retirement announcement.',
-    content: 'Academy Award winner Damian Cross announced his retirement from acting at age 45, stating he wants to focus on family, health, and charitable work. Cross won the Oscar for Best Actor for Broken Glass (2023).',
-    author: 'Emma Wilson',
-    sourceName: 'Variety',
-    sourceId: 'variety',
-    category: 'entertainment',
-    thumbnailURL: 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=800',
-    publishedAt: admin.firestore.Timestamp.fromDate(new Date(Date.now() - 24 * 60 * 60 * 1000)),
-    url: 'https://variety.com/damian-cross-retires',
-    isBreaking: false,
-    tags: ['oscar', 'hollywood', 'actor', 'retirement'],
-    views: 31000,
-  },
-  {
-    title: 'UN Climate Summit Reaches Historic Carbon Neutrality Agreement',
-    description: '195 nations sign landmark agreement pledging carbon neutrality by 2045.',
-    content: '195 nations signed a landmark agreement at the UN Climate Summit in Geneva, pledging carbon neutrality by 2045. The deal includes legally binding emissions targets and a $2 trillion global green transition fund.',
-    author: 'Sophia Lee',
-    sourceName: 'The Guardian',
-    sourceId: 'the-guardian',
-    category: 'general',
-    thumbnailURL: 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=800',
-    publishedAt: admin.firestore.Timestamp.fromDate(new Date(Date.now() - 27 * 60 * 60 * 1000)),
-    url: 'https://theguardian.com/un-climate-summit-2026',
-    isBreaking: false,
-    tags: ['climate', 'un', 'environment', 'sustainability'],
-    views: 19800,
-  },
-  {
-    title: 'Apple Unveils Revolutionary AR Glasses with 3-Day Battery Life',
-    description: 'The Apple Lens product arrives, promising to change how we interact with the digital world.',
-    content: 'Apple CEO Tim Cook unveiled Apple Lens, AR glasses priced at $1,499 with a 3-day battery life. Features include 40-degree field of view, eye and hand tracking, real-time translation in 60 languages, and deep Mac integration.',
-    author: 'Mike Chen',
-    sourceName: 'The Verge',
-    sourceId: 'the-verge',
-    category: 'technology',
-    thumbnailURL: 'https://images.unsplash.com/photo-1622979135225-d2ba269cf1ac?w=800',
-    publishedAt: admin.firestore.Timestamp.fromDate(new Date(Date.now() - 48 * 60 * 60 * 1000)),
-    url: 'https://theverge.com/apple-lens-unveil',
-    isBreaking: false,
-    tags: ['apple', 'ar', 'glasses', 'technology'],
-    views: 67300,
-  },
-];
+async function uploadImage(imageUrl, articleId) {
+  const response = await fetch(imageUrl);
+  if (!response.ok) throw new Error('Failed: ' + response.statusText);
+  const buffer = await response.buffer();
+  const storagePath = 'media/articles/' + articleId + '.jpg';
+  const file = bucket.file(storagePath);
+  await file.save(buffer, { metadata: { contentType: 'image/jpeg' } });
+  await file.makePublic();
+  return 'https://storage.googleapis.com/' + bucket.name + '/' + storagePath;
+}
 
 async function seed() {
-  console.log('Seeding Firestore with', articles.length, 'articles...');
-  const batch = db.batch();
-
-  for (const article of articles) {
-    const ref = db.collection('articles').doc();
-    batch.set(ref, article);
+  console.log('Seeding with Firebase Storage...');
+  const existing = await db.collection('articles').get();
+  if (!existing.empty) {
+    const b = db.batch();
+    existing.docs.forEach(d => b.delete(d.ref));
+    await b.commit();
+    console.log('Deleted ' + existing.size + ' existing articles.');
   }
-
-  await batch.commit();
-  console.log('Done! All articles uploaded successfully.');
+  for (const article of ARTICLES) {
+    const ref = db.collection('articles').doc();
+    console.log('Processing: ' + article.title);
+    let thumbnailURL;
+    try {
+      thumbnailURL = await uploadImage(article.imageUrl, ref.id);
+      console.log('  Uploaded to Storage: ' + thumbnailURL);
+    } catch (e) {
+      console.warn('  Upload failed, using original URL:', e.message);
+      thumbnailURL = article.imageUrl;
+    }
+    await ref.set({
+      title: article.title,
+      description: article.description,
+      content: article.content,
+      author: article.author,
+      sourceName: article.sourceName,
+      sourceId: article.sourceId,
+      category: article.category,
+      thumbnailURL: thumbnailURL,
+      publishedAt: admin.firestore.Timestamp.fromDate(new Date(Date.now() - article.msAgo)),
+      url: article.url,
+      isBreaking: article.isBreaking,
+      tags: article.tags,
+      views: article.views,
+    });
+    console.log('  Saved to Firestore: ' + ref.id);
+  }
+  console.log('Done! All articles seeded with Storage URLs.');
   process.exit(0);
 }
 
-seed().catch((err) => {
-  console.error('Error seeding:', err);
-  process.exit(1);
-});
+seed().catch(e => { console.error('Error:', e); process.exit(1); });
