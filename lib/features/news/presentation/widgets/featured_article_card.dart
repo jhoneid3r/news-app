@@ -22,7 +22,7 @@ class FeaturedArticleCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.15),
+              color: Colors.black.withValues(alpha: 0.15),
               blurRadius: 12,
               offset: const Offset(0, 4),
             ),
@@ -36,8 +36,8 @@ class FeaturedArticleCard extends StatelessWidget {
             CachedNetworkImage(
               imageUrl: article.thumbnailURL,
               fit: BoxFit.cover,
-              placeholder: (_, __) => Container(color: Colors.grey.shade300),
-              errorWidget: (_, __, ___) =>
+              placeholder: (_, _) => Container(color: Colors.grey.shade300),
+              errorWidget: (_, _, _) =>
                   Container(color: Colors.grey.shade300),
             ),
             // Gradient overlay
@@ -87,7 +87,7 @@ class FeaturedArticleCard extends StatelessWidget {
                         const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                     decoration: BoxDecoration(
                       color:
-                          AppColors.categoryColor(article.category).withOpacity(0.85),
+                          AppColors.categoryColor(article.category).withValues(alpha: 0.85),
                       borderRadius: BorderRadius.circular(6),
                     ),
                     child: Text(

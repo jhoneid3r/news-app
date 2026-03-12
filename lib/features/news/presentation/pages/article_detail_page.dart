@@ -148,11 +148,11 @@ class _Content extends StatelessWidget {
                             width: double.infinity,
                             height: 220,
                             fit: BoxFit.cover,
-                            placeholder: (_, __) => Container(
+                            placeholder: (_, _) => Container(
                               height: 220,
                               color: Colors.grey.shade200,
                             ),
-                            errorWidget: (_, __, ___) => Container(
+                            errorWidget: (_, _, _) => Container(
                               height: 220,
                               color: Colors.grey.shade200,
                               child: const Icon(

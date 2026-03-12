@@ -42,7 +42,7 @@ class _BookmarksView extends StatelessWidget {
                       Icon(
                         Icons.bookmark_border,
                         size: 64,
-                        color: Colors.grey.withOpacity(0.4),
+                        color: Colors.grey.withValues(alpha: 0.4),
                       ),
                       const SizedBox(height: 16),
                       Text(
@@ -63,7 +63,7 @@ class _BookmarksView extends StatelessWidget {
             return ListView.separated(
               padding: const EdgeInsets.all(16),
               itemCount: state.bookmarks.length,
-              separatorBuilder: (_, __) => const SizedBox(height: 12),
+              separatorBuilder: (_, _) => const SizedBox(height: 12),
               itemBuilder: (_, i) => Dismissible(
                 key: Key(state.bookmarks[i].id),
                 direction: DismissDirection.endToStart,
