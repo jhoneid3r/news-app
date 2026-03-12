@@ -6,6 +6,12 @@ class AppColors {
   static const Color primaryDark = Color(0xFF0D47A1);
   static const Color accent = Color(0xFFFF6D00);
 
+  // Figma design — purple/lavender palette
+  static const Color publishBar = Color(0xFFE8D5FF);
+  static const Color publishBarDark = Color(0xFF3D2060);
+  static const Color fabPurple = Color(0xFF9B59B6);
+  static const Color attachButton = Color(0xFFCFB8F0);
+
   // Backgrounds
   static const Color bgLight = Color(0xFFF8F9FA);
   static const Color bgDark = Color(0xFF0F1117);

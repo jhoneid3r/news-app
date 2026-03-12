@@ -1,7 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/di/injection_container.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/date_formatter.dart';
@@ -77,208 +76,180 @@ class _Content extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
 
     return Scaffold(
-      body: CustomScrollView(
-        slivers: [
-          SliverAppBar(
-            expandedHeight: 260,
-            pinned: true,
-            stretch: true,
-            flexibleSpace: FlexibleSpaceBar(
-              stretchModes: const [StretchMode.zoomBackground],
-              background: Stack(
-                fit: StackFit.expand,
-                children: [
-                  CachedNetworkImage(
-                    imageUrl: article.thumbnailURL,
-                    fit: BoxFit.cover,
-                    placeholder: (_, __) =>
-                        Container(color: Colors.grey.shade300),
-                    errorWidget: (_, __, ___) =>
-                        Container(color: Colors.grey.shade300),
+      body: Column(
+        children: [
+          // Scrollable content
+          Expanded(
+            child: CustomScrollView(
+              slivers: [
+                // AppBar
+                SliverAppBar(
+                  pinned: true,
+                  leading: IconButton(
+                    icon: const Icon(Icons.arrow_back_ios_new, size: 20),
+                    onPressed: () => Navigator.of(context).pop(),
                   ),
-                  const DecoratedBox(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: [Color(0x44000000), Color(0xCC000000)],
-                        stops: [0.4, 1.0],
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            actions: [
-              BlocBuilder<BookmarksCubit, BookmarksState>(
-                builder: (context, bmState) {
-                  final isBookmarked = bmState is BookmarksLoaded &&
-                      bmState.bookmarks.any((a) => a.id == article.id);
-                  return IconButton(
-                    icon: Icon(
-                      isBookmarked ? Icons.bookmark : Icons.bookmark_border,
-                      color: isBookmarked ? AppColors.accent : Colors.white,
-                    ),
-                    onPressed: () =>
-                        context.read<BookmarksCubit>().toggle(article),
-                  );
-                },
-              ),
-              IconButton(
-                icon: const Icon(Icons.open_in_browser, color: Colors.white),
-                onPressed: () async {
-                  final uri = Uri.tryParse(article.url);
-                  if (uri != null && await canLaunchUrl(uri)) {
-                    await launchUrl(uri,
-                        mode: LaunchMode.externalApplication);
-                  }
-                },
-              ),
-            ],
-          ),
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Category + breaking
-                  Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 10, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: AppColors.categoryColor(article.category)
-                              .withOpacity(0.15),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Text(
-                          article.category.toUpperCase(),
-                          style: TextStyle(
-                            color: AppColors.categoryColor(article.category),
-                            fontSize: 11,
-                            fontWeight: FontWeight.w700,
-                            letterSpacing: 0.5,
+                  actions: [
+                    BlocBuilder<BookmarksCubit, BookmarksState>(
+                      builder: (context, bmState) {
+                        final isBookmarked = bmState is BookmarksLoaded &&
+                            bmState.bookmarks.any((a) => a.id == article.id);
+                        return IconButton(
+                          icon: Icon(
+                            isBookmarked
+                                ? Icons.bookmark
+                                : Icons.bookmark_border,
+                            color: isBookmarked
+                                ? AppColors.fabPurple
+                                : null,
                           ),
-                        ),
-                      ),
-                      if (article.isBreaking) ...[
-                        const SizedBox(width: 8),
+                          onPressed: () =>
+                              context.read<BookmarksCubit>().toggle(article),
+                        );
+                      },
+                    ),
+                  ],
+                ),
+
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Title card — matches Figma
                         Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 10, vertical: 4),
+                          width: double.infinity,
+                          padding: const EdgeInsets.all(16),
                           decoration: BoxDecoration(
-                            color: Colors.red,
-                            borderRadius: BorderRadius.circular(8),
+                            color: theme.cardTheme.color,
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: isDark
+                                  ? Colors.white12
+                                  : Colors.black12,
+                            ),
                           ),
-                          child: const Text(
-                            'BREAKING',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 11,
-                              fontWeight: FontWeight.w800,
-                              letterSpacing: 0.5,
+                          child: Text(
+                            article.title,
+                            style: theme.textTheme.titleLarge,
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+
+                        // Hero image
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(12),
+                          child: CachedNetworkImage(
+                            imageUrl: article.thumbnailURL,
+                            width: double.infinity,
+                            height: 220,
+                            fit: BoxFit.cover,
+                            placeholder: (_, __) => Container(
+                              height: 220,
+                              color: Colors.grey.shade200,
+                            ),
+                            errorWidget: (_, __, ___) => Container(
+                              height: 220,
+                              color: Colors.grey.shade200,
+                              child: const Icon(
+                                  Icons.image_not_supported_outlined,
+                                  size: 48),
                             ),
                           ),
                         ),
-                      ],
-                    ],
-                  ),
-                  const SizedBox(height: 14),
+                        const SizedBox(height: 16),
 
-                  // Title
-                  Text(
-                    article.title,
-                    style: theme.textTheme.headlineMedium,
-                  ),
-                  const SizedBox(height: 12),
-
-                  // Description
-                  Text(
-                    article.description,
-                    style: theme.textTheme.bodyLarge?.copyWith(
-                      color: theme.textTheme.bodyMedium?.color,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-
-                  // Meta row
-                  Row(
-                    children: [
-                      CircleAvatar(
-                        radius: 16,
-                        backgroundColor:
-                            AppColors.categoryColor(article.category)
-                                .withOpacity(0.2),
-                        child: Text(
-                          article.author.isNotEmpty
-                              ? article.author[0].toUpperCase()
-                              : '?',
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w700,
-                            color: AppColors.categoryColor(article.category),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                        // Meta
+                        Row(
                           children: [
                             Text(
-                              article.author.isNotEmpty
-                                  ? article.author
-                                  : article.sourceName,
-                              style: theme.textTheme.titleMedium
-                                  ?.copyWith(fontSize: 14),
+                              article.sourceName,
+                              style: theme.textTheme.labelSmall?.copyWith(
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.fabPurple,
+                              ),
                             ),
+                            const SizedBox(width: 8),
+                            Text('·',
+                                style: theme.textTheme.labelSmall),
+                            const SizedBox(width: 8),
                             Text(
-                              '${article.sourceName} · ${DateFormatter.fullDate(article.publishedAt)}',
+                              DateFormatter.timeAgo(article.publishedAt),
                               style: theme.textTheme.labelSmall,
                             ),
                           ],
                         ),
-                      ),
-                    ],
-                  ),
+                        const SizedBox(height: 12),
 
-                  const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 16),
-                    child: Divider(),
-                  ),
-
-                  // Content
-                  Text(
-                    article.content,
-                    style: theme.textTheme.bodyLarge,
-                  ),
-
-                  const SizedBox(height: 20),
-
-                  // Tags
-                  if (article.tags.isNotEmpty) ...[
-                    Text('Tags', style: theme.textTheme.titleMedium),
-                    const SizedBox(height: 8),
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      children: article.tags
-                          .map((t) => Chip(label: Text('#$t')))
-                          .toList(),
+                        // Content
+                        Text(
+                          article.content,
+                          style: theme.textTheme.bodyLarge,
+                        ),
+                        const SizedBox(height: 32),
+                      ],
                     ),
-                  ],
-
-                  const SizedBox(height: 40),
-                ],
-              ),
+                  ),
+                ),
+              ],
             ),
           ),
+
+          // Bottom "Publish Article" bar — matches Figma
+          _PublishBar(
+            label: 'Read full article',
+            icon: Icons.open_in_browser,
+            onTap: () {},
+          ),
         ],
+      ),
+    );
+  }
+}
+
+/// Reusable bottom action bar matching the Figma purple/lavender style.
+class _PublishBar extends StatelessWidget {
+  final String label;
+  final IconData icon;
+  final VoidCallback onTap;
+
+  const _PublishBar({
+    required this.label,
+    required this.icon,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 24),
+        decoration: BoxDecoration(
+          color: isDark ? AppColors.publishBarDark : AppColors.publishBar,
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon,
+                color: isDark ? Colors.white70 : Colors.black87, size: 20),
+            const SizedBox(width: 10),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: isDark ? Colors.white : Colors.black87,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

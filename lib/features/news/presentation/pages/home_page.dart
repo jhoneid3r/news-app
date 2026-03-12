@@ -1,14 +1,12 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import '../../../../core/constants/app_constants.dart';
 import '../../../../core/di/injection_container.dart';
 import '../../../../core/theme/app_colors.dart';
-import '../../../../core/theme/theme_cubit.dart';
+import '../../domain/entities/article.dart';
 import '../bloc/news_feed/news_feed_bloc.dart';
-import '../widgets/article_card.dart';
 import '../widgets/article_shimmer.dart';
-import '../widgets/featured_article_card.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -27,241 +25,139 @@ class _HomeView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
     return Scaffold(
       appBar: AppBar(
-        title: RichText(
-          text: TextSpan(
-            children: [
-              TextSpan(
-                text: 'News',
-                style: theme.appBarTheme.titleTextStyle,
-              ),
-              TextSpan(
-                text: 'Flow',
-                style: theme.appBarTheme.titleTextStyle?.copyWith(
-                  color: AppColors.primary,
-                ),
-              ),
-            ],
-          ),
-        ),
+        centerTitle: true,
+        title: const Text('Daily News'),
         actions: [
           IconButton(
-            icon: const Icon(Icons.search),
-            onPressed: () => context.push('/search'),
+            icon: const Icon(Icons.bookmark_border),
+            onPressed: () => context.go('/bookmarks'),
           ),
-          BlocBuilder<ThemeCubit, ThemeMode>(
-            bloc: sl<ThemeCubit>(),
-            builder: (context, mode) {
-              final icon = switch (mode) {
-                ThemeMode.light => Icons.dark_mode_outlined,
-                ThemeMode.dark => Icons.light_mode_outlined,
-                ThemeMode.system => Icons.brightness_auto,
-              };
-              final tooltip = switch (mode) {
-                ThemeMode.light => 'Switch to dark',
-                ThemeMode.dark => 'Switch to system',
-                ThemeMode.system => 'Switch to light',
-              };
-              return IconButton(
-                icon: Icon(icon),
-                tooltip: tooltip,
-                onPressed: () => sl<ThemeCubit>().toggle(),
-              );
-            },
-          ),
-          const SizedBox(width: 4),
         ],
       ),
       body: BlocBuilder<NewsFeedBloc, NewsFeedState>(
         builder: (context, state) {
           if (state is NewsFeedLoading || state is NewsFeedInitial) {
-            return const _LoadingView();
+            return const Padding(
+              padding: EdgeInsets.all(16),
+              child: ArticleShimmer(),
+            );
           }
           if (state is NewsFeedError) {
             return _ErrorView(
               message: state.message,
-              onRetry: () => context
-                  .read<NewsFeedBloc>()
-                  .add(const LoadNewsFeed()),
+              onRetry: () =>
+                  context.read<NewsFeedBloc>().add(const LoadNewsFeed()),
             );
           }
           if (state is NewsFeedLoaded) {
-            return _LoadedView(state: state);
+            final articles = state.headlines;
+            return RefreshIndicator(
+              onRefresh: () async =>
+                  context.read<NewsFeedBloc>().add(const RefreshNewsFeed()),
+              child: ListView.separated(
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 16, vertical: 12),
+                itemCount: articles.length,
+                separatorBuilder: (_, __) => const Divider(height: 1),
+                itemBuilder: (_, i) =>
+                    _ArticleListTile(article: articles[i]),
+              ),
+            );
           }
           return const SizedBox.shrink();
         },
       ),
-    );
-  }
-}
-
-class _LoadedView extends StatelessWidget {
-  final NewsFeedLoaded state;
-  const _LoadedView({required this.state});
-
-  @override
-  Widget build(BuildContext context) {
-    return RefreshIndicator(
-      onRefresh: () async {
-        context.read<NewsFeedBloc>().add(const RefreshNewsFeed());
-      },
-      child: CustomScrollView(
-        slivers: [
-          // Breaking news / Featured
-          if (state.breaking.isNotEmpty)
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Breaking News',
-                      style: Theme.of(context).textTheme.headlineMedium,
-                    ),
-                    const SizedBox(height: 12),
-                    SizedBox(
-                      height: 280,
-                      child: PageView.builder(
-                        itemCount: state.breaking.length,
-                        controller:
-                            PageController(viewportFraction: 0.92),
-                        itemBuilder: (_, i) => Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 4),
-                          child: FeaturedArticleCard(
-                            article: state.breaking[i],
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-
-          // Category filter
-          SliverToBoxAdapter(
-            child: _CategoryBar(selected: state.selectedCategory),
-          ),
-
-          // Article list header
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 20, 16, 12),
-              child: Text(
-                state.selectedCategory == 'general'
-                    ? 'Latest News'
-                    : AppConstants.categoryLabels[state.selectedCategory] ??
-                        state.selectedCategory,
-                style: Theme.of(context).textTheme.headlineMedium,
-              ),
-            ),
-          ),
-
-          // Articles
-          SliverList(
-            delegate: SliverChildBuilderDelegate(
-              (context, index) {
-                final articles = state.categoryArticles.isNotEmpty
-                    ? state.categoryArticles
-                    : state.headlines;
-                if (index >= articles.length) return null;
-                return Padding(
-                  padding:
-                      const EdgeInsets.fromLTRB(16, 0, 16, 12),
-                  child: ArticleCard(
-                    article: articles[index],
-                    compact: true,
-                  ),
-                );
-              },
-              childCount: (state.categoryArticles.isNotEmpty
-                      ? state.categoryArticles
-                      : state.headlines)
-                  .length,
-            ),
-          ),
-
-          const SliverToBoxAdapter(child: SizedBox(height: 24)),
-        ],
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: AppColors.fabPurple,
+        foregroundColor: Colors.white,
+        onPressed: () => context.push('/create'),
+        child: const Icon(Icons.add),
       ),
     );
   }
 }
 
-class _CategoryBar extends StatelessWidget {
-  final String selected;
-  const _CategoryBar({required this.selected});
+class _ArticleListTile extends StatelessWidget {
+  final Article article;
+  const _ArticleListTile({required this.article});
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: 52,
-      child: ListView.separated(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
-        itemCount: AppConstants.categories.length,
-        separatorBuilder: (_, __) => const SizedBox(width: 8),
-        itemBuilder: (context, i) {
-          final cat = AppConstants.categories[i];
-          final isSelected = cat == selected;
-          final color = AppColors.categoryColor(cat);
-          return GestureDetector(
-            onTap: () => context
-                .read<NewsFeedBloc>()
-                .add(SelectCategory(cat)),
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-              decoration: BoxDecoration(
-                color: isSelected ? color : color.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(20),
+    final theme = Theme.of(context);
+    final dateStr = article.publishedAt.toIso8601String();
+
+    return InkWell(
+      onTap: () => context.push('/article/${article.id}', extra: article),
+      borderRadius: BorderRadius.circular(8),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 12),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Thumbnail
+            ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: CachedNetworkImage(
+                imageUrl: article.thumbnailURL,
+                width: 100,
+                height: 100,
+                fit: BoxFit.cover,
+                placeholder: (_, __) => Container(
+                  width: 100,
+                  height: 100,
+                  color: Colors.grey.shade200,
+                ),
+                errorWidget: (_, __, ___) => Container(
+                  width: 100,
+                  height: 100,
+                  color: Colors.grey.shade200,
+                  child: const Icon(Icons.image_not_supported_outlined),
+                ),
               ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
+            ),
+            const SizedBox(width: 12),
+            // Content
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    AppConstants.categoryEmojis[cat] ?? '',
-                    style: const TextStyle(fontSize: 14),
-                  ),
-                  const SizedBox(width: 4),
-                  Text(
-                    AppConstants.categoryLabels[cat] ?? cat,
-                    style: TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                      color: isSelected ? Colors.white : color,
+                    article.title,
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w700,
+                      height: 1.3,
                     ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    article.description,
+                    style: theme.textTheme.bodyMedium,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 6),
+                  Row(
+                    children: [
+                      const Icon(Icons.trending_up,
+                          size: 14, color: Colors.grey),
+                      const SizedBox(width: 4),
+                      Text(
+                        dateStr.length > 20
+                            ? dateStr.substring(0, 20)
+                            : dateStr,
+                        style: theme.textTheme.labelSmall,
+                      ),
+                    ],
                   ),
                 ],
               ),
             ),
-          );
-        },
-      ),
-    );
-  }
-}
-
-class _LoadingView extends StatelessWidget {
-  const _LoadingView();
-
-  @override
-  Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      physics: const NeverScrollableScrollPhysics(),
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const FeaturedShimmer(),
-          const SizedBox(height: 20),
-          const ArticleShimmer(),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -270,7 +166,6 @@ class _LoadingView extends StatelessWidget {
 class _ErrorView extends StatelessWidget {
   final String message;
   final VoidCallback onRetry;
-
   const _ErrorView({required this.message, required this.onRetry});
 
   @override
@@ -281,22 +176,15 @@ class _ErrorView extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.wifi_off_rounded,
-              size: 64,
-              color: Colors.grey.withOpacity(0.5),
-            ),
+            Icon(Icons.wifi_off_rounded,
+                size: 64, color: Colors.grey.withValues(alpha: 0.5)),
             const SizedBox(height: 16),
-            Text(
-              'Something went wrong',
-              style: Theme.of(context).textTheme.titleLarge,
-            ),
+            Text('Something went wrong',
+                style: Theme.of(context).textTheme.titleLarge),
             const SizedBox(height: 8),
-            Text(
-              message,
-              style: Theme.of(context).textTheme.bodyMedium,
-              textAlign: TextAlign.center,
-            ),
+            Text(message,
+                style: Theme.of(context).textTheme.bodyMedium,
+                textAlign: TextAlign.center),
             const SizedBox(height: 24),
             FilledButton.icon(
               onPressed: onRetry,
