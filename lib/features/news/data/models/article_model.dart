@@ -69,7 +69,7 @@ class ArticleModel extends Article {
         'sourceId': sourceId,
         'category': category,
         'thumbnailURL': thumbnailURL,
-        'publishedAt': Timestamp.fromDate(publishedAt),
+        'publishedAt': publishedAt.toIso8601String(),
         'url': url,
         'isBreaking': isBreaking,
         'tags': tags,
