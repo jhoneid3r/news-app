@@ -75,13 +75,9 @@ Si empezara este proyecto desde cero, **conectaría Firebase desde el primer dí
 
 ## 6. Demo del Proyecto
 
-### Capturas de Pantalla
+### Capturas de Pantalla y Video Demo
 
-> *(Capturas por agregar)*
-
-### Video Demo
-
-> 📹 [Ver el demo completo en Google Drive](#) *(link por agregar)*
+> 📁 [Ver capturas de pantalla y video demo completo en Google Drive](https://drive.google.com/drive/folders/1fOYS0WQBOypDe93tqgT2f5euSjuVYi91?usp=drive_link)
 
 ---
 

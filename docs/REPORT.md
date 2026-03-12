@@ -75,13 +75,9 @@ If I started this project from scratch, I would **connect Firebase from day one*
 
 ## 6. Project Demo
 
-### Screenshots
+### Screenshots & Video Demo
 
-> *(Screenshots to be added)*
-
-### Video Demo
-
-> 📹 [Watch the full demo on Google Drive](#) *(link to be added)*
+> 📁 [View screenshots and full demo video on Google Drive](https://drive.google.com/drive/folders/1fOYS0WQBOypDe93tqgT2f5euSjuVYi91?usp=drive_link)
 
 ---
 
