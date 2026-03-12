@@ -30,7 +30,7 @@ class AppTheme {
           ),
         ),
         chipTheme: ChipThemeData(
-          backgroundColor: AppColors.primary.withOpacity(0.1),
+          backgroundColor: AppColors.primary.withValues(alpha: 0.1),
           labelStyle: const TextStyle(
             color: AppColors.primary,
             fontWeight: FontWeight.w600,
@@ -106,7 +106,7 @@ class AppTheme {
           ),
         ),
         chipTheme: ChipThemeData(
-          backgroundColor: AppColors.primary.withOpacity(0.2),
+          backgroundColor: AppColors.primary.withValues(alpha: 0.2),
           labelStyle: const TextStyle(
             color: Color(0xFF82B4FF),
             fontWeight: FontWeight.w600,

@@ -9,6 +9,7 @@ import '../../features/bookmarks/domain/usecases/toggle_bookmark.dart';
 import '../../features/bookmarks/presentation/bloc/bookmarks_cubit.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../features/news/data/datasources/news_firestore_datasource.dart';
+import '../../features/news/data/datasources/news_mock_datasource.dart';
 import '../../features/news/data/repositories/news_repository_impl.dart';
 import '../../features/news/domain/repositories/news_repository.dart';
 import '../../features/news/domain/usecases/get_article_by_id.dart';

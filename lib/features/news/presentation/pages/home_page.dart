@@ -60,7 +60,7 @@ class _HomeView extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(
                     horizontal: 16, vertical: 12),
                 itemCount: articles.length,
-                separatorBuilder: (_, __) => const Divider(height: 1),
+                separatorBuilder: (_, _) => const Divider(height: 1),
                 itemBuilder: (_, i) =>
                     _ArticleListTile(article: articles[i]),
               ),
@@ -104,12 +104,12 @@ class _ArticleListTile extends StatelessWidget {
                 width: 100,
                 height: 100,
                 fit: BoxFit.cover,
-                placeholder: (_, __) => Container(
+                placeholder: (_, _) => Container(
                   width: 100,
                   height: 100,
                   color: Colors.grey.shade200,
                 ),
-                errorWidget: (_, __, ___) => Container(
+                errorWidget: (_, _, _) => Container(
                   width: 100,
                   height: 100,
                   color: Colors.grey.shade200,

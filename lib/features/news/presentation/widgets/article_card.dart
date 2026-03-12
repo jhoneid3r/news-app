@@ -110,15 +110,15 @@ class _Thumbnail extends StatelessWidget {
       height: height,
       width: width ?? double.infinity,
       fit: BoxFit.cover,
-      placeholder: (_, __) => Container(
+      placeholder: (_, _) => Container(
         height: height,
         width: width ?? double.infinity,
-        color: Colors.grey.withOpacity(0.2),
+        color: Colors.grey.withValues(alpha: 0.2),
       ),
-      errorWidget: (_, __, ___) => Container(
+      errorWidget: (_, _, _) => Container(
         height: height,
         width: width ?? double.infinity,
-        color: Colors.grey.withOpacity(0.2),
+        color: Colors.grey.withValues(alpha: 0.2),
         child: const Icon(Icons.image_not_supported_outlined),
       ),
     );
@@ -134,7 +134,7 @@ class _CategoryBadge extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
       decoration: BoxDecoration(
-        color: AppColors.categoryColor(category).withOpacity(0.15),
+        color: AppColors.categoryColor(category).withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(6),
       ),
       child: Text(
