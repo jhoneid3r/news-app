@@ -94,6 +94,12 @@ class _HomeView extends StatelessWidget {
           return const SizedBox.shrink();
         },
       ),
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: AppColors.fabPurple,
+        foregroundColor: Colors.white,
+        onPressed: () => context.push('/create'),
+        child: const Icon(Icons.add),
+      ),
     );
   }
 }
