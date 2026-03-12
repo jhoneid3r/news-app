@@ -1,5 +1,8 @@
+import 'dart:io';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:image_picker/image_picker.dart';
 import '../../../../core/di/injection_container.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../domain/entities/article.dart';
@@ -16,12 +19,27 @@ class _CreateArticlePageState extends State<CreateArticlePage> {
   final _titleController = TextEditingController();
   final _contentController = TextEditingController();
   bool _isLoading = false;
+  File? _pickedImage;
 
   @override
   void dispose() {
     _titleController.dispose();
     _contentController.dispose();
     super.dispose();
+  }
+
+  Future<void> _pickImage() async {
+    final picker = ImagePicker();
+    final picked = await picker.pickImage(source: ImageSource.gallery, imageQuality: 80);
+    if (picked == null) return;
+    setState(() => _pickedImage = File(picked.path));
+  }
+
+  Future<String?> _uploadImage(File file) async {
+    final ref = FirebaseStorage.instance
+        .ref('media/articles/user_${DateTime.now().millisecondsSinceEpoch}.jpg');
+    await ref.putFile(file);
+    return await ref.getDownloadURL();
   }
 
   Future<void> _onPublish() async {
@@ -60,6 +78,13 @@ class _CreateArticlePageState extends State<CreateArticlePage> {
 
     setState(() => _isLoading = true);
 
+    String thumbnailURL = 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=800';
+    if (_pickedImage != null) {
+      try {
+        thumbnailURL = await _uploadImage(_pickedImage!) ?? thumbnailURL;
+      } catch (_) {}
+    }
+
     final article = Article(
       id: '',
       title: title,
@@ -69,7 +94,7 @@ class _CreateArticlePageState extends State<CreateArticlePage> {
       sourceName: 'NewsFlow',
       sourceId: 'newsflow',
       category: 'general',
-      thumbnailURL: 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=800',
+      thumbnailURL: thumbnailURL,
       publishedAt: DateTime.now(),
       url: '',
       isBreaking: false,
@@ -150,32 +175,47 @@ class _CreateArticlePageState extends State<CreateArticlePage> {
                         const SizedBox(height: 16),
 
                         // Attach image button
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 20, vertical: 10),
-                          decoration: BoxDecoration(
-                            color: AppColors.attachButton.withValues(alpha: 0.3),
-                            borderRadius: BorderRadius.circular(24),
-                            border: Border.all(
-                                color: AppColors.fabPurple.withValues(alpha: 0.4)),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(Icons.add_photo_alternate_outlined,
-                                  color: AppColors.fabPurple, size: 20),
-                              const SizedBox(width: 8),
-                              Text(
-                                'Attach Image',
-                                style: TextStyle(
-                                  color: AppColors.fabPurple,
-                                  fontWeight: FontWeight.w600,
-                                  fontSize: 14,
+                        GestureDetector(
+                          onTap: _pickImage,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 20, vertical: 10),
+                            decoration: BoxDecoration(
+                              color: AppColors.attachButton.withValues(alpha: 0.3),
+                              borderRadius: BorderRadius.circular(24),
+                              border: Border.all(
+                                  color: AppColors.fabPurple.withValues(alpha: 0.4)),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(Icons.add_photo_alternate_outlined,
+                                    color: AppColors.fabPurple, size: 20),
+                                const SizedBox(width: 8),
+                                Text(
+                                  _pickedImage != null ? 'Change Image' : 'Attach Image',
+                                  style: TextStyle(
+                                    color: AppColors.fabPurple,
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 14,
+                                  ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                         ),
+                        if (_pickedImage != null) ...[
+                          const SizedBox(height: 12),
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(12),
+                            child: Image.file(
+                              _pickedImage!,
+                              height: 180,
+                              width: double.infinity,
+                              fit: BoxFit.cover,
+                            ),
+                          ),
+                        ],
                         const SizedBox(height: 16),
 
                         // Content area
